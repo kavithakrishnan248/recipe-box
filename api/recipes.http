@@ -1,0 +1,60 @@
+# VS Code: install the "REST Client" extension (humao.rest-client), then click "Send Request".
+# Start the API first: dotnet run --project api --launch-profile http
+
+@baseUrl = http://localhost:5080
+# Set this to the id returned by the POST below.
+@id = 1
+
+### List recipes (first page, default page size)
+GET {{baseUrl}}/api/recipes
+
+### Search by name, paged
+GET {{baseUrl}}/api/recipes?search=pancake&page=1&pageSize=10
+
+### Get one recipe with its ingredients
+GET {{baseUrl}}/api/recipes/{{id}}
+
+### Create a recipe (201 Created)
+POST {{baseUrl}}/api/recipes
+Content-Type: application/json
+
+{
+  "name": "Pancakes",
+  "instructions": "Whisk everything together. Fry ladlefuls in a hot buttered pan until golden on both sides.",
+  "ingredients": [
+    { "name": "Flour", "quantity": "200 g" },
+    { "name": "Milk", "quantity": "300 ml" },
+    { "name": "Eggs", "quantity": "2" },
+    { "name": "Salt", "quantity": "a pinch" }
+  ]
+}
+
+### Replace a recipe and its whole ingredient list (204 No Content)
+PUT {{baseUrl}}/api/recipes/{{id}}
+Content-Type: application/json
+
+{
+  "name": "Buttermilk pancakes",
+  "instructions": "Whisk everything together, rest for 10 minutes, then fry until golden on both sides.",
+  "ingredients": [
+    { "name": "Flour", "quantity": "200 g" },
+    { "name": "Buttermilk", "quantity": "300 ml" },
+    { "name": "Eggs", "quantity": "2" }
+  ]
+}
+
+### Delete a recipe (204 No Content)
+DELETE {{baseUrl}}/api/recipes/{{id}}
+
+### Error sample: empty name (400)
+POST {{baseUrl}}/api/recipes
+Content-Type: application/json
+
+{
+  "name": "",
+  "instructions": "Missing a name.",
+  "ingredients": []
+}
+
+### Error sample: recipe does not exist (404)
+GET {{baseUrl}}/api/recipes/999999
