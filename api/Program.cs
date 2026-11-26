@@ -23,12 +23,25 @@ builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ConcurrencyExceptionHandler>();
 
+// Only origins listed in config may call the API from a browser. With none configured, cross-origin calls are blocked.
+const string WebAppCorsPolicy = "WebApp";
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options => options.AddPolicy(WebAppCorsPolicy, policy => policy
+    .WithOrigins(allowedOrigins)
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .WithExposedHeaders("Location")));
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
 app.UseHttpsRedirection();
+
+// CORS must run before authentication so preflights and 401 responses still carry CORS headers.
+app.UseCors(WebAppCorsPolicy);
+// app.UseAuthentication(); app.UseAuthorization(); go here, after CORS.
 
 app.MapControllers();
 
